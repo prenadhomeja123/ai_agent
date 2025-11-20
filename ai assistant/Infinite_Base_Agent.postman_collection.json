@@ -1,0 +1,679 @@
+{
+	"info": {
+		"_postman_id": "infinite-base-agent-api",
+		"name": "Infinite Base Agent API",
+		"description": "Complete API collection for Infinite Base Agent - Plan A",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "test@example.com",
+			"type": "string"
+		},
+		{
+			"key": "otp_code",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "lead_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "1. Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('user_email', pm.response.json().user.email);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirm\": \"password123\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "2. Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('jwt_token', jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "3. Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{user_email}}\",\n  \"purpose\": \"verification\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/send-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "send-otp"]
+						},
+						"description": "Sends OTP to email. In DEBUG mode, OTP is returned in response and printed to Django console."
+					}
+				},
+				{
+					"name": "4. Verify OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('jwt_token', jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp_code}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/verify-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "verify-otp"]
+						},
+						"description": "Verify OTP. Get OTP from Django console (DEBUG mode) or email."
+					}
+				},
+				{
+					"name": "5. Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Leads",
+			"item": [
+				{
+					"name": "Get All Leads",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/leads",
+							"host": ["{{base_url}}"],
+							"path": ["leads"]
+						}
+					}
+				},
+				{
+					"name": "Create Lead",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('lead_id', pm.response.json().id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sarah Johnson\",\n  \"email\": \"sarah@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"new\",\n  \"source\": \"Website\",\n  \"notes\": \"Interested in coaching services\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/leads",
+							"host": ["{{base_url}}"],
+							"path": ["leads"]
+						}
+					}
+				},
+				{
+					"name": "Get Lead by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/leads/{{lead_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["leads", "{{lead_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Lead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sarah Johnson\",\n  \"email\": \"sarah@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"contacted\",\n  \"source\": \"Website\",\n  \"notes\": \"Followed up via email\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/leads/{{lead_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["leads", "{{lead_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Lead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/leads/{{lead_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["leads", "{{lead_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Messages",
+			"item": [
+				{
+					"name": "Get All Messages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/messages",
+							"host": ["{{base_url}}"],
+							"path": ["messages"]
+						}
+					}
+				},
+				{
+					"name": "Get Messages by Lead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/messages?leadId={{lead_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["messages"],
+							"query": [
+								{
+									"key": "leadId",
+									"value": "{{lead_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"leadId\": {{lead_id}},\n  \"channel\": \"email\",\n  \"content\": \"Hi Sarah, thank you for your interest in our services!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/messages",
+							"host": ["{{base_url}}"],
+							"path": ["messages"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "AI Integration",
+			"item": [
+				{
+					"name": "Generate AI Response",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"prompt\": \"Write a follow-up email to a new lead\",\n  \"context\": {\n    \"lead\": {\n      \"id\": {{lead_id}},\n      \"name\": \"Sarah Johnson\",\n      \"email\": \"sarah@example.com\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/generate",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "generate"]
+						}
+					}
+				},
+				{
+					"name": "Get Agent Activity",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/activity",
+							"host": ["{{base_url}}"],
+							"path": ["activity"]
+						}
+					}
+				},
+				{
+					"name": "Get Agent Activity (Filtered)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/activity?dateFrom=2024-01-15&dateTo=2024-01-16&channel=email",
+							"host": ["{{base_url}}"],
+							"path": ["activity"],
+							"query": [
+								{
+									"key": "dateFrom",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-01-16"
+								},
+								{
+									"key": "channel",
+									"value": "email"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Automations",
+			"item": [
+				{
+					"name": "Get All Automations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/automations",
+							"host": ["{{base_url}}"],
+							"path": ["automations"]
+						}
+					}
+				},
+				{
+					"name": "Create Automation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Booking Reminder\",\n  \"type\": \"booking_reminder\",\n  \"enabled\": true,\n  \"trigger\": \"24h before booking\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/automations",
+							"host": ["{{base_url}}"],
+							"path": ["automations"]
+						}
+					}
+				},
+				{
+					"name": "Toggle Automation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"enabled\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/automations/1",
+							"host": ["{{base_url}}"],
+							"path": ["automations", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Get Settings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/settings",
+							"host": ["{{base_url}}"],
+							"path": ["settings"]
+						}
+					}
+				},
+				{
+					"name": "Update Settings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"channels\": {\n    \"email\": {\n      \"enabled\": true,\n      \"provider\": \"Gmail\"\n    },\n    \"whatsapp\": {\n      \"enabled\": true,\n      \"provider\": \"Meta\"\n    }\n  },\n  \"automations\": {\n    \"leadFollowup\": true,\n    \"bookingReminder\": false\n  },\n  \"notifications\": {\n    \"email\": true,\n    \"sms\": true,\n    \"inApp\": true\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/settings",
+							"host": ["{{base_url}}"],
+							"path": ["settings"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
+
