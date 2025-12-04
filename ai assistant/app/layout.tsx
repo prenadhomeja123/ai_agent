@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Infinite Base Agent - Plan A',
+  title: 'Infinite Agent',
   description: 'AI-powered client management and sales automation for practitioners',
 }
 
